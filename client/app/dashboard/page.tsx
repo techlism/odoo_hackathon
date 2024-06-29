@@ -1,4 +1,5 @@
 "use client";
+import { format } from "date-fns";
 
 import { BASE_URL } from "@/lib/constants";
 import axios from "axios";
@@ -8,10 +9,45 @@ import { CreateUserDialog } from "../../components/CreateUserDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaperUploadDialog } from "@/components/UploadPaper";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+
 
 export default function Dashboard() {
     const [userData, setUserData] = useState({} as any);
     const [loggedIn, setLoggedIn] = useState<boolean>(false);
+    const [papers, setPapers] = useState([]);
+
+    async function downloadPaper(paper_id: string, encryptedFileName: string) {
+        try {
+            const response = await axios.post(
+                `${BASE_URL}/api/paper/download-paper`,
+                {
+                    paper_id,
+                    encryptedFileName
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+    
+            // if (response.status === 200) {
+            //     const url = window.URL.createObjectURL(new Blob([response.data]));
+            //     const link = document.createElement("a");
+            //     link.href = url;
+            //     link.setAttribute("download", encryptedFileName); // Set the file name for download
+            //     document.body.appendChild(link);
+            //     link.click();
+            //     document.body.removeChild(link);
+            // } else {
+            //     console.error("Failed to download paper");
+            // }
+        } catch (error) {
+            console.error("Error downloading paper:", error);
+        }
+    }
     
     useEffect(() => {
         const fetchUserData = async () => {
@@ -33,10 +69,26 @@ export default function Dashboard() {
             fetchUserData();
         }
     }, [loggedIn]);
+    useEffect(()=>{
+        async function fetchPapers() {
+            const response = await axios.get(`${BASE_URL}/api/paper/papers`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+            if (response?.data?.success) {
+                console.log(response.data.data);
+                setPapers(response.data.data);
+            }            
+        }
+        if(loggedIn){
+            fetchPapers();
+        }
+    },[loggedIn])
     if (!loggedIn) {
-        return <h1>You are not logged in please log in/register.</h1>;
+        return <h1 className="text-5xl">Loading..</h1>;
     }
-
+    
       
     return (
         
@@ -64,7 +116,39 @@ export default function Dashboard() {
             <CreateUserDialog
                 institute_id={userData?.institute?.institute_id}
             />     
-            <PaperUploadDialog institute_id="nalla" />
+            <PaperUploadDialog institute_id={userData?.institute?.institute_id} examiner_id={userData?._id} />
+            <div className="space-y-4">
+      {papers.map((paper:any) => (
+        <Card key={paper._id} className="w-full max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">{paper.paper_name}</CardTitle>
+            <p className="text-sm text-gray-500">{paper.paper_code}</p>
+          </CardHeader>
+          <CardContent>
+            <p>Access Start Time: {format(new Date(paper.access_time_start), "Pp")}</p>
+            <p>Access End Time: {format(new Date(paper.access_time_end), "Pp")}</p>
+            {paper.papers.map((subPaper:any) => (
+              <div key={subPaper._id} className="mt-4">
+                <p className="text-sm text-gray-500">Uploaded At: {format(new Date(subPaper.upload_time), "Pp")}</p>
+                <CardFooter className="flex justify-between">
+                  <Button variant="default" onClick={() => downloadPaper(subPaper?._id,subPaper?.paper_url)}>
+                    Download
+                  </Button>
+                  <label className="btn btn-default">
+                    Upload New Version
+                    <input
+                      type="file"
+                    //   onChange={(e) => handleUploadNewVersion(e, subPaper._id)}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                </CardFooter>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
         </main>
     );
 }
