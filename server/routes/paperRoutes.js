@@ -11,4 +11,5 @@ router.put("/update-paper",checkUserAuthentication, updatePaperWithFileUpload);
 router.put("/update-paper-details/:paper_id",checkUserAuthentication, updatePaperDetails);
 router.get("/papers",checkUserAuthentication, getAllPapers);
 router.get("/papers-of-examiner",checkUserAuthentication, getPapersOfExaminer);
+router.get("/papers-of-invigilator",checkUserAuthentication, getPapersOfInvigilator);
 export default router;
