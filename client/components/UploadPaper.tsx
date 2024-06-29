@@ -87,7 +87,7 @@ export function PaperUploadDialog({ institute_id }: { institute_id: string }) {
         const startTime = formData.get("startTime");
         const endTime   =   formData.get("endTime");
 
-        if (paperName && paperCode && invigilator && startTime && endTime) {
+        if (paperName && paperCode && invigilator && startTime && endTime && inputFile) {
             const response = await axios.post(
                 `${BASE_URL}/api/paper/upload`,
                 {
