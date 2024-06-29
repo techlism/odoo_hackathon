@@ -174,3 +174,19 @@ export const registerNewUser = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
+//get all invigilators
+export const getAllInvigilators = async (req, res) => {
+  try {
+    const invigilators = await User.find({ role: "invigilator" });
+    res.status(200).json({
+      success: true,
+      data: invigilators,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+

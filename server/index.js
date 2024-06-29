@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import connectToDb from './config/db.js';
 import otpRoutes from './routes/otpRoutes.js';
 import userRouter from './routes/userRouter.js';
+import paperRoutes from './routes/paperRoutes.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -14,7 +15,7 @@ connectToDb();
 app.use(express.json());
 app.use('/api/otp', otpRoutes);
 app.use('/api/user', userRouter);
-
+app.use('/api/paper', paperRoutes);
 app.get('/', (req, res) => {
   res.send('Welcome to Test Secure API services');
 });
