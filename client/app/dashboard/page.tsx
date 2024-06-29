@@ -7,12 +7,12 @@ import { useEffect, useState } from "react";
 import { CreateUserDialog } from "../../components/CreateUserDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PaperUploadDialog } from "@/components/UploadPaper";
 
 export default function Dashboard() {
     const [userData, setUserData] = useState({} as any);
     const [loggedIn, setLoggedIn] = useState<boolean>(false);
-    const [inputFile, setInputFile] = useState<File | null>(null);
-        
+    
     useEffect(() => {
         const fetchUserData = async () => {
             const token = localStorage.getItem("token");
@@ -36,28 +36,7 @@ export default function Dashboard() {
     if (!loggedIn) {
         return <h1>You are not logged in please log in/register.</h1>;
     }
-    const preventDefaults = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-    };     
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            // Set the first file to your state variable
-            setInputFile(e.dataTransfer.files[0]);
-        }
-    };
 
-    const handleFileChange = async (
-        event: React.ChangeEvent<HTMLInputElement>
-      ) => {
-        const file = event.target.files?.[0] || null;
-        // file?.name && console.log(file.name);
-        if (file && file.name.toLowerCase().endsWith('pdf')){
-          setInputFile(file);
-        }
-      };
-    
       
     return (
         
@@ -84,36 +63,8 @@ export default function Dashboard() {
             </div>
             <CreateUserDialog
                 institute_id={userData?.institute?.institute_id}
-            />
-            <div>
-                <Label
-                    htmlFor="dropzone-file"
-                    className="justify-self-center cursor-pointer"
-                >
-                    <div
-                        className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 "
-                        onDragOver={preventDefaults}
-                        onDragEnter={preventDefaults}
-                        onDragLeave={preventDefaults}
-                        onDrop={handleDrop}
-                    >
-                        <UploadIcon />
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-                            <span className="font-semibold">
-                                Click to Select
-                            </span>{" "}
-                            or Drag and Drop
-                        </p>
-                    </div>
-                    <Input
-                        id="dropzone-file"
-                        type="file"
-                        accept={`.pdf`}
-                        className="hidden"
-                        onChange={handleFileChange}
-                    />
-                </Label>
-            </div>
+            />     
+            <PaperUploadDialog institute_id="nalla" />
         </main>
     );
 }
