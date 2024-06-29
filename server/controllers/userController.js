@@ -9,7 +9,7 @@ export const registerInstituteWithAdmin = async (req, res) => {
       admin_name,
       email,
       password,
-      institue_name,
+      institute_name,
       address,
       pincode,
       otp,
@@ -23,7 +23,7 @@ export const registerInstituteWithAdmin = async (req, res) => {
       });
     }
 
-    const institutePayload = { name: institue_name, address, pincode };
+    const institutePayload = { name: institute_name, address, pincode };
 
     // Check OTP
     const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
