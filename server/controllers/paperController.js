@@ -129,6 +129,129 @@ export const downloadDecryptedPaper = async (req, res) => {
 };
 
 // function to update paper when again reuploading the paper
-// export const updatePaper = async (req, res) => {
-  
-// };
+export const updatePaperWithFileUpload = async (req, res) => {
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, message: err.message });
+    } else if (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+    updatePaper(req, res);
+  });
+};
+
+const updatePaper = async (req, res) => {
+  try {
+    const { paper_id } = req.params;
+    const paperFile = req.file;
+    const paper = await Paper.findById(paper_id);
+    
+    if (!paper) {
+      return res.status(404).json({
+        success: false,
+        message: "Paper not found",
+      });
+    }
+
+    const fileBytes = paperFile.buffer;
+    const watermarkedBytes = await addWatermark(fileBytes, "TEST SECURE 2024");
+    const encryptedFileName = `${Date.now()}-${paperFile.originalname}.enc`;
+    const encryptedFilePath = path.join("uploads", encryptedFileName);
+    encryptFile(watermarkedBytes, encryptedFilePath, "password1234");
+
+    // Update the paper details in the database
+    paper.papers.push({ paper_url: encryptedFileName });
+    await paper.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Paper updated successfully",
+      paper,
+      encryptedFilePath,
+    });
+  }
+  catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+// update paper with new details
+export const updatePaperDetails = async (req, res) => {
+  try {
+    const { paper_id } = req.params;
+    const {
+      paper_name,
+      paper_code,
+      access_time_start,
+      access_time_end,
+    } = req.body;
+
+    const paper = await Paper.findById(paper_id);
+    if (!paper) {
+      return res.status(404).json({
+        success: false,
+        message: "Paper not found",
+      });
+    }
+
+    paper.paper_name = paper_name;
+    paper.paper_code = paper_code;
+    paper.access_time_start = access_time_start;
+    paper.access_time_end = access_time_end;
+
+    await paper.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Paper details updated successfully",
+      paper,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// send all papers to admin
+export const getAllPapers = async (req, res) => {
+  try {
+    const papers = await Paper.find();
+    res.status(200).json({
+      success: true,
+      data: papers,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+//get all papers of invigilator
+export const getPapersOfInvigilator = async (req, res) => {
+  try {
+    const { invigilator_id } = req.params;
+    const papers = await Paper.find({ invigilators: invigilator_id });
+    res.status(200).json({
+      success: true,
+      data: papers,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+//get all papers of examiner
+export const getPapersOfExaminer = async (req, res) => {
+  try {
+    const { examiner_id } = req.params;
+    const papers = await Paper.find({ examiner_id });
+    res.status(200).json({
+      success: true,
+      data: papers,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
