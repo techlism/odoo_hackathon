@@ -26,16 +26,17 @@ client/.DS_Store
 client/*.pem
 
 # debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
 
 # local env files
-.env*.local
+client/.env*.local
+client/env*
 
 # vercel
-.vercel
+client/.vercel
 
 # typescript
-*.tsbuildinfo
-next-env.d.ts
+client/*.tsbuildinfo
+client/next-env.d.ts
