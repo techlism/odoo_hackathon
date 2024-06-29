@@ -52,7 +52,7 @@ export function OTPVerificationDialog({
         );
         if(response?.data?.success){          
             localStorage.setItem("token", response.data.token);
-            window.location.href = `/dashboard?admin_name=${registrationDetails.adminName}&institute_name=${registrationDetails.instituteName}`;
+            window.location.href = `/dashboard`;
         }
         
     }
