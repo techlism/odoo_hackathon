@@ -9,7 +9,6 @@ const versionSchema = new Schema({
   },
   upload_time: {
     type: Date,
-    required: true,
     default: Date.now,
   },
 });
@@ -34,7 +33,7 @@ const paperSchema = new Schema(
       ref: "User",
       required: true,
     },
-    invigilator_id: {
+    invigilators: {
       type: [Schema.Types.ObjectId],
       ref: "User",
       required: true,
