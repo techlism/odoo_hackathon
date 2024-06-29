@@ -1,22 +1,14 @@
-import { readFileSync, writeFileSync } from 'fs';
-import CryptoJS from 'crypto-js';
+import crypto from 'crypto';
+import fs from 'fs';
 
-function decryptFile(inputPath, outputPath, key) {
-    // Read the encrypted file content
-    const encryptedContent = readFileSync(inputPath, 'utf8');
-    
-    // Decrypt the content
-    const bytes = CryptoJS.AES.decrypt(encryptedContent, key);
-    const decryptedContent = bytes.toString(CryptoJS.enc.Utf8);
-    
-    // Convert the decrypted content back to a buffer
-    const fileBuffer = Buffer.from(decryptedContent, 'base64');
-    
-    // Write the decrypted buffer to a new file
-    writeFileSync(outputPath, fileBuffer);
-    
-    console.log('File decrypted successfully!');
-}
+const algorithm = 'aes-256-ctr';
 
-const key = 'my-secret-key';
-decryptFile('encrypted.pdf.enc', 'decrypted.pdf', key);
+const decryptFile = (inputPath, outputPath, password) => {
+  const encrypted = fs.readFileSync(inputPath);
+  const decipher = crypto.createDecipher(algorithm, password);
+  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+
+  fs.writeFileSync(outputPath, decrypted);
+};
+
+export default decryptFile;
