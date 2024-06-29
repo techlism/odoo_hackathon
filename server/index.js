@@ -1,14 +1,14 @@
-require('dotenv').config();
 
 // requiring dependencies
 // const path = require('path');
-const express = require('express');
+import express from 'express';
 // const cors = require('cors');
 // const cookieParser = require('cookie-parser');
 // require db configs
 // const connectToDb = require('./config/db');
 const app = express();
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 // // connect to db
 // connectToDb();
