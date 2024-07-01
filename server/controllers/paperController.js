@@ -83,7 +83,7 @@ export const createPaper = async (req, res) => {
 };
 
 export const downloadDecryptedPaper = async (req, res) => {
-  const { encryptedFileName, paper_id } = req.body;
+  const { encryptedFileName, paper_id } = req.params;
 
   try {
     console.log(encryptedFileName);
@@ -95,12 +95,14 @@ export const downloadDecryptedPaper = async (req, res) => {
         message: "Paper not found",
       });
     }
+    console.log(paper);
     // if not in time range return encrypted file to download
     const currentTime = new Date();
     if (
       currentTime < paper.access_time_start ||
       currentTime > paper.access_time_end
     ) {
+      console.log("Not in time range");
       return res.download(encryptedFileName);
     }
     const encryptedFilePath = path.join("uploads", encryptedFileName);
@@ -112,6 +114,7 @@ export const downloadDecryptedPaper = async (req, res) => {
     // Decrypt the file
     decryptFile(encryptedFilePath, decryptedFilePath, "password1234");
 
+    console.log("HERE")
     // Send the decrypted file to the user
     res.download(decryptedFilePath, (err) => {
       if (err) {
