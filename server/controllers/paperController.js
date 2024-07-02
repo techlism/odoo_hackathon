@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import Paper from "../models/paper.js";
+import User from "../models/user.js";
 import fs from "fs";
 import path from "path";
 import { addWatermark } from "../utils/addWatermark.js";
@@ -96,6 +97,11 @@ export const downloadDecryptedPaper = async (req, res) => {
       });
     }
     console.log(paper);
+    const encryptedFilePath = path.join("uploads", encryptedFileName);
+    const decryptedFilePath = path.join(
+      "downloads",
+      `${Date.now()}-decrypted.pdf`
+    );
     // if not in time range return encrypted file to download
     const currentTime = new Date();
     if (
@@ -103,18 +109,18 @@ export const downloadDecryptedPaper = async (req, res) => {
       currentTime > paper.access_time_end
     ) {
       console.log("Not in time range");
-      return res.download(encryptedFileName);
+      return res.download(encryptedFilePath, (err) => {
+        if (err) {
+          console.log(err.message);
+          return res.status(500).json({ success: false, error: err.message });
+        }
+      });
     }
-    const encryptedFilePath = path.join("uploads", encryptedFileName);
-    const decryptedFilePath = path.join(
-      "downloads",
-      `${Date.now()}-decrypted.pdf`
-    );
 
     // Decrypt the file
     decryptFile(encryptedFilePath, decryptedFilePath, "password1234");
 
-    console.log("HERE")
+    console.log("HERE");
     // Send the decrypted file to the user
     res.download(decryptedFilePath, (err) => {
       if (err) {
@@ -148,7 +154,7 @@ const updatePaper = async (req, res) => {
     const { paper_id } = req.params;
     const paperFile = req.file;
     const paper = await Paper.findById(paper_id);
-    
+
     if (!paper) {
       return res.status(404).json({
         success: false,
@@ -172,22 +178,17 @@ const updatePaper = async (req, res) => {
       paper,
       encryptedFilePath,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
-}
+};
 // update paper with new details
 export const updatePaperDetails = async (req, res) => {
   try {
     const { paper_id } = req.params;
-    const {
-      paper_name,
-      paper_code,
-      access_time_start,
-      access_time_end,
-    } = req.body;
+    const { paper_name, paper_code, access_time_start, access_time_end } =
+      req.body;
 
     const paper = await Paper.findById(paper_id);
     if (!paper) {
@@ -218,11 +219,39 @@ export const updatePaperDetails = async (req, res) => {
 // send all papers to admin
 export const getAllPapers = async (req, res) => {
   try {
-    const papers = await Paper.find();
-    res.status(200).json({
-      success: true,
-      data: papers,
-    });
+    const role = req.user.role;
+    const institute_id = req.user.institute_id;
+    if (role === "admin") {
+      //find all papers of the institute
+      const papers = await Paper.find({ institute_id });
+      papers.sort((a, b) => {
+        return b.access_time_start - a.access_time_start;
+      });
+      res.status(200).json({
+        success: true,
+        data: papers,
+      });
+    }
+    if (role === "examiner") {
+      const papers = await Paper.find({ examiner_id: req.user._id });
+      papers.sort((a, b) => {
+        return b.access_time_start - a.access_time_start;
+      });
+      res.status(200).json({
+        success: true,
+        data: papers,
+      });
+    }
+    if (role === "invigilator") {
+      const papers = await Paper.find({ invigilators: req.user._id });
+      papers.sort((a, b) => {
+       return b.access_time_start - a.access_time_start;
+      });
+      res.status(200).json({
+        success: true,
+        data: papers,
+      });
+    }
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });

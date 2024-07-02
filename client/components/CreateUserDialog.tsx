@@ -59,6 +59,8 @@ export function CreateUserDialog({ institute_id }: { institute_id: string }) {
             });
             if(response?.data?.success){
                 console.log("User created successfully");
+                // Close the dialog
+                window.location.reload();
             }
         }                
     };
