@@ -40,7 +40,7 @@ Ensure you have the following installed:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/test-secure.git
+   git clone https://github.com/techlism/odoo_hackathon.git
    cd test-secure
    ```
 
